@@ -6,7 +6,7 @@ unsigned int MisplacedTiles::calculate(Puzzle puzzle)
 	std::vector<unsigned char> board = puzzle.getBoard();
 
 	unsigned int misplacedTiles = 0;
-	for (unsigned char i = 0; i < board.size(); i++)
+	for (std::vector<unsigned char>::size_type i = 0; i < board.size(); i++)
 		if (board[i] != i + 1)
 			misplacedTiles++;
 
@@ -19,7 +19,7 @@ unsigned int ManhattanDistance::calculate(Puzzle puzzle)
 	std::vector<unsigned char> board = puzzle.getBoard();
 
 	unsigned int manhattanDistance = 0;
-	for (unsigned char i = 0; i < board.size(); i++)
+	for (std::vector<unsigned char>::size_type i = 0; i < board.size(); i++)
 	{
 		unsigned char value = board[i];
 		if (value != 0)

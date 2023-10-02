@@ -4,9 +4,9 @@
 #include <algorithm>
 
 template <typename NodeComparator>
-void Search<NodeComparator>::expandNode(std::shared_ptr<Node> node)
+void Search<NodeComparator>::expandNode(const std::shared_ptr<Node>& node)
 {
-	for (Puzzle puzzle : node->getPuzzle().getChildren())
+	for (const Puzzle& puzzle : node->getPuzzle().getChildren())
 	{
 		std::shared_ptr<Node> child = std::make_shared<Node>(puzzle, heuristic.get(), node.get());
 
@@ -61,7 +61,7 @@ std::unique_ptr<std::vector<Puzzle>> Search<NodeComparator>::solve(Puzzle puzzle
 			return std::make_unique<std::vector<Puzzle>>(reconstructPath(node.get()));
 		expandNode(node);
 
-		// std::cout << "Cost: " << node->getCost() << " Heuristic: " << node->getHeuristic() << std::endl;
+//		 std::cout << "Cost: " << node->getCost() << " Heuristic: " << node->getHeuristic() << std::endl;
 	}
 
 	return nullptr;

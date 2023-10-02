@@ -22,13 +22,13 @@ private:
 	std::multiset<std::shared_ptr<Node>, NodeComparator> frontier;
 	std::unordered_multiset<std::shared_ptr<Node>> closed;
 
-	void expandNode(std::shared_ptr<Node> node);
+	void expandNode(const std::shared_ptr<Node>& node);
 	std::vector<Puzzle> reconstructPath(Node *node);
 
 public:
-	Search(std::unique_ptr<Heuristic> heuristic);
-	std::unique_ptr<std::vector<Puzzle>> solve(Puzzle puzzle);
-	void printStats();
+	explicit Search(std::unique_ptr<Heuristic> heuristic);
+	std::unique_ptr<std::vector<Puzzle>> solve(Puzzle puzzle) override;
+	void printStats() override;
 };
 
 template class Search<AStarComparator>;

@@ -3,14 +3,15 @@
 #include <iostream>
 #include <chrono>
 #include <fstream>
+#include <utility>
 
-void error(std::string message, int code = 1)
+void error(const std::string& message, int code = 1)
 {
 	std::cerr << message << std::endl;
 	exit(code);
 }
 
-unsigned char input(std::string message, unsigned char length)
+unsigned char input(const std::string& message, unsigned char length)
 {
 	std::string input;
 	unsigned char choice;
@@ -71,7 +72,7 @@ std::unique_ptr<Heuristic> getHeuristic()
 		std::make_unique<LinearConflict>()};
 
 	std::cout << "Available heuristics:" << std::endl;
-	for (unsigned char i = 0; i < heuristics.size(); i++)
+	for (std::array<std::unique_ptr<Heuristic>, 3>::size_type i = 0; i < heuristics.size(); i++)
 		std::cout << i + 1 << ". " << heuristics[i]->getName() << std::endl;
 	std::cout << std::endl;
 
@@ -91,10 +92,10 @@ unsigned char getAlgorithm()
 	return input("Choose an algorithm: ", i);
 }
 
-void solve(std::shared_ptr<SearchBase> search, Puzzle puzzle)
+void solve(const std::shared_ptr<SearchBase>& search, Puzzle puzzle)
 {
 	auto start = std::chrono::steady_clock::now();
-	std::unique_ptr<std::vector<Puzzle>> path = search->solve(puzzle);
+	std::unique_ptr<std::vector<Puzzle>> path = search->solve(std::move(puzzle));
 	auto end = std::chrono::steady_clock::now();
 
 	if (path == nullptr)
@@ -111,9 +112,9 @@ void solve(std::shared_ptr<SearchBase> search, Puzzle puzzle)
 	std::ofstream solution("solution.txt");
 	if (!solution.is_open())
 		error("Could not open solution.txt", 3);
-	for (Puzzle puzzle : *path)
-		solution << puzzle << std::endl
-				 << std::endl;
+	for (const Puzzle& puzzle_next : *path)
+		solution << puzzle_next << std::endl
+                 << std::endl;
 }
 
 int main(int argc, char **argv)

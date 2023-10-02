@@ -13,14 +13,14 @@ private:
 	unsigned int heuristic;
 
 public:
-	Node(Puzzle puzzle, Heuristic *heuristic, Node *parent = nullptr);
+	Node(const Puzzle& puzzle, Heuristic *heuristic, Node *parent = nullptr);
 
 	Puzzle &getPuzzle();
 	Node *getParent();
 
-	unsigned int getCost() const;
-	unsigned int getHeuristic() const;
-	unsigned int getScore() const;
+	[[nodiscard]] unsigned int getCost() const;
+	[[nodiscard]] unsigned int getHeuristic() const;
+	[[nodiscard]] unsigned int getScore() const;
 };
 
 struct NodeComparator
@@ -30,15 +30,15 @@ struct NodeComparator
 
 struct AStarComparator : public NodeComparator
 {
-	bool operator()(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) const;
+	bool operator()(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) const override;
 };
 
 struct GreedyComparator : public NodeComparator
 {
-	bool operator()(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) const;
+	bool operator()(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) const override;
 };
 
 struct UniformCostComparator : public NodeComparator
 {
-	bool operator()(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) const;
+	bool operator()(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) const override;
 };

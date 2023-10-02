@@ -25,11 +25,11 @@ private:
 	bool isSolvable();
 
 public:
-	Puzzle(unsigned char size = 3);
-	Puzzle(std::string filename);
-	Puzzle(std::vector<unsigned char> board);
+	explicit Puzzle(unsigned char size = 3);
+	explicit Puzzle(const std::string& filename);
+	explicit Puzzle(std::vector<unsigned char> board);
 
-	unsigned char getSize();
+	[[nodiscard]] unsigned char getSize() const;
 	std::vector<unsigned char> getBoard();
 	std::vector<Puzzle> getChildren();
 
