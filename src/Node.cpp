@@ -1,12 +1,12 @@
 #include "Node.hpp"
 
-Node::Node(const Puzzle &puzzle, Heuristic *heuristic, Node *parent) : puzzle(puzzle), parent(parent),
+Node::Node(const Puzzle &puzzle, Heuristic &heuristic, Node *parent) : puzzle(puzzle), parent(parent),
                                                                        cost(parent ? parent->getCost() + 1 : 0),
-                                                                       heuristic(heuristic->calculate(puzzle)) {
+                                                                       heuristic(heuristic.calculate(puzzle)) {
 }
 
-Puzzle &Node::getPuzzle() { return puzzle; }
-Node *Node::getParent() { return parent; }
+const Puzzle &Node::getPuzzle() const { return puzzle; }
+const Node *Node::getParent() const { return parent; }
 
 unsigned int Node::getCost() const { return cost; }
 unsigned int Node::getHeuristic() const { return heuristic; }

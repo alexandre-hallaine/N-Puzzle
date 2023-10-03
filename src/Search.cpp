@@ -6,7 +6,7 @@
 template<typename NodeComparator>
 void Search<NodeComparator>::expandNode(const std::shared_ptr<Node> &node) {
     for (const Puzzle& puzzle: node->getPuzzle().getChildren()) {
-        std::shared_ptr<Node> child = std::make_shared<Node>(puzzle, heuristic.get(), node.get());
+        std::shared_ptr<Node> child = std::make_shared<Node>(puzzle, *heuristic, node.get());
 
         if (std::find_if(closed.begin(), closed.end(), [&child](const std::shared_ptr<Node> &node) {
             return node->getPuzzle() == child->getPuzzle();
@@ -27,12 +27,11 @@ void Search<NodeComparator>::expandNode(const std::shared_ptr<Node> &node) {
 }
 
 template<typename NodeComparator>
-std::vector<Puzzle> Search<NodeComparator>::reconstructPath(Node *node) {
-    std::vector<Puzzle> path;
-    while (node != nullptr) {
-        path.insert(path.begin(), node->getPuzzle());
-        node = node->getParent();
-    }
+std::vector<Puzzle> Search<NodeComparator>::reconstructPath(const Node *node) {
+    if (node == nullptr)
+        return {};
+    std::vector<Puzzle> path = reconstructPath(node->getParent());
+    path.insert(path.begin(), node->getPuzzle());
     return path;
 }
 
@@ -45,7 +44,7 @@ std::unique_ptr<std::vector<Puzzle>> Search<NodeComparator>::solve(Puzzle puzzle
     frontier.clear();
     closed.clear();
 
-    frontier.insert(std::make_shared<Node>(puzzle, heuristic.get()));
+    frontier.insert(std::make_shared<Node>(puzzle, *heuristic));
     while (!frontier.empty()) {
         std::shared_ptr<Node> node = *frontier.begin();
         frontier.erase(frontier.begin());

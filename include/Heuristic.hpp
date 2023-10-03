@@ -6,25 +6,25 @@
 
 class Heuristic {
 public:
-    virtual std::string getName() = 0;
+    [[nodiscard]] virtual std::string getName() const = 0;
     virtual unsigned int calculate(Puzzle puzzle) = 0;
     virtual ~Heuristic() = default;
 };
 
 class MisplacedTiles : public Heuristic {
 public:
-    std::string getName() override;
+    [[nodiscard]] std::string getName() const override;
     unsigned int calculate(Puzzle puzzle) override;
 };
 
 class ManhattanDistance : public Heuristic {
 public:
-    std::string getName() override;
+    [[nodiscard]] std::string getName() const override;
     unsigned int calculate(Puzzle puzzle) override;
 };
 
 class LinearConflict : public ManhattanDistance {
 public:
-    std::string getName() override;
+    [[nodiscard]] std::string getName() const override;
     unsigned int calculate(Puzzle puzzle) override;
 };

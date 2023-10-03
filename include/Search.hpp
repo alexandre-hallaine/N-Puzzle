@@ -21,7 +21,7 @@ private:
     std::unordered_multiset<std::shared_ptr<Node>> closed;
 
     void expandNode(const std::shared_ptr<Node> &node);
-    std::vector<Puzzle> reconstructPath(Node *node);
+    std::vector<Puzzle> reconstructPath(const Node *node);
 
 public:
     explicit Search(std::unique_ptr<Heuristic> heuristic);
