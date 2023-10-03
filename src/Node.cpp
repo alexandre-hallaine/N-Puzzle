@@ -1,8 +1,8 @@
 #include "Node.hpp"
 
 Node::Node(const Puzzle &puzzle, Heuristic &heuristic, const Node *parent) : puzzle(puzzle), parent(parent),
-                                                                       cost(parent ? parent->getCost() + 1 : 0),
-                                                                       heuristic(heuristic.calculate(puzzle)) {
+                                                                             cost(parent ? parent->getCost() + 1 : 0),
+                                                                             heuristic(heuristic.calculate(puzzle)) {
 }
 
 const Puzzle &Node::getPuzzle() const { return puzzle; }

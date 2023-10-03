@@ -9,9 +9,10 @@
 
 class SearchBase {
 public:
+    virtual ~SearchBase() = default;
+
     virtual std::unique_ptr<std::stack<Puzzle>> solve(Puzzle puzzle) = 0;
     virtual void printStats() = 0;
-    virtual ~SearchBase() = default;
 };
 
 template<typename NodeComparator = AStarComparator>
@@ -27,6 +28,7 @@ private:
 
 public:
     explicit Search(std::unique_ptr<Heuristic> heuristic);
+
     std::unique_ptr<std::stack<Puzzle>> solve(Puzzle puzzle) override;
     void printStats() override;
 };

@@ -5,7 +5,7 @@
 
 template<typename NodeComparator>
 void Search<NodeComparator>::expandNode(const Node &node) {
-    for (const Puzzle& puzzle: node.getPuzzle().getChildren()) {
+    for (const Puzzle &puzzle: node.getPuzzle().getChildren()) {
         std::shared_ptr<Node> child = std::make_shared<Node>(puzzle, *heuristic, &node);
 
         if (std::find_if(closed.begin(), closed.end(), [&child](const std::shared_ptr<Node> &node) {

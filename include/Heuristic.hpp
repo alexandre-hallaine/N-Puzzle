@@ -6,9 +6,10 @@
 
 class Heuristic {
 public:
+    virtual ~Heuristic() = default;
+
     [[nodiscard]] virtual std::string getName() const = 0;
     virtual unsigned int calculate(const Puzzle &puzzle) = 0;
-    virtual ~Heuristic() = default;
 };
 
 class MisplacedTiles : public Heuristic {
