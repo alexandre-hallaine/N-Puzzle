@@ -24,7 +24,7 @@ clean:
 fclean: clean
 	rm -f $(NAME) && echo "Removed: $(NAME)"
 
-re: fclean all
+re: clean all
 
 .PHONY: all, clean, fclean, re
 .SILENT:

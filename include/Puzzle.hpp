@@ -8,6 +8,7 @@
 
 class Puzzle {
 private:
+
     unsigned char size;
     std::vector<unsigned char> board;
     std::pair<unsigned char, unsigned char> emptyTile;
@@ -19,17 +20,18 @@ private:
         RIGHT
     };
 
-    std::unique_ptr<Puzzle> move(Direction direction);
-    bool isSolvable();
+    explicit Puzzle(std::vector<unsigned char> board);
+
+    [[nodiscard]] std::unique_ptr<Puzzle> getSpecificChildren(Direction direction) const;
+    [[nodiscard]] bool isSolvable() const;
 
 public:
     explicit Puzzle(unsigned char size = 3);
     explicit Puzzle(const std::string &filename);
-    explicit Puzzle(std::vector<unsigned char> board);
 
     [[nodiscard]] unsigned char getSize() const;
-    std::vector<unsigned char> getBoard();
-    std::vector<Puzzle> getChildren();
+    [[nodiscard]] std::vector<unsigned char> getBoard() const;
+    [[nodiscard]] std::vector<Puzzle> getChildren() const;
 
     bool operator==(const Puzzle &other) const;
     friend std::ostream &operator<<(std::ostream &os, const Puzzle &puzzle);
