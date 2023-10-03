@@ -20,18 +20,16 @@ unsigned char input(const std::string &message, unsigned char length) {
 
         try {
             choice = std::stoi(input);
+            if (choice < 1 || choice > length)
+                std::cout << "That's not a valid choice" << std::endl;
+            else
+                break;
         }
         catch (std::exception &e) {
             std::cout << "That's not a number" << std::endl;
         }
-
-        if (choice < 1 || choice > length)
-            std::cout << "That's not a valid choice" << std::endl;
-        else
-            break;
     } while (true);
     std::cout << std::endl;
-
     return choice;
 }
 
@@ -63,7 +61,7 @@ std::unique_ptr<Heuristic> getHeuristic() {
             std::make_unique<LinearConflict>()};
 
     std::cout << "Available heuristics:" << std::endl;
-    for (std::array<std::unique_ptr<Heuristic>, 3>::size_type i = 0; i < heuristics.size(); i++)
+    for (auto i = 0; i < heuristics.size(); i++)
         std::cout << i + 1 << ". " << heuristics[i]->getName() << std::endl;
     std::cout << std::endl;
 
@@ -71,7 +69,7 @@ std::unique_ptr<Heuristic> getHeuristic() {
     return std::move(heuristics[choice - 1]);
 }
 
-unsigned char getAlgorithm() {
+std::unique_ptr<SearchBase> getAlgorithm(std::unique_ptr<Heuristic> heuristic) {
     std::cout << "Available algorithms:" << std::endl;
 
     unsigned char i = 0;
@@ -79,10 +77,21 @@ unsigned char getAlgorithm() {
         std::cout << (int) ++i << ". " << algorithm << std::endl;
     std::cout << std::endl;
 
-    return input("Choose an algorithm: ", i);
+    unsigned char choice = input("Choose an algorithm: ", i);
+    switch (choice) {
+        case 1:
+            return std::make_unique<Search<AStarComparator>>(std::move(heuristic));
+        case 2:
+            return std::make_unique<Search<GreedyComparator>>(std::move(heuristic));
+        case 3:
+            return std::make_unique<Search<UniformCostComparator>>(std::move(heuristic));
+        default:
+            error("Invalid algorithm choice", 3); // Should never happen
+    }
+    return nullptr; // Avoid warning
 }
 
-void solve(const std::shared_ptr<SearchBase> &search, Puzzle puzzle) {
+void solve(std::unique_ptr<SearchBase> search, Puzzle puzzle) {
     auto start = std::chrono::steady_clock::now();
     std::unique_ptr<std::stack<Puzzle>> path = search->solve(std::move(puzzle));
     auto end = std::chrono::steady_clock::now();
@@ -99,8 +108,8 @@ void solve(const std::shared_ptr<SearchBase> &search, Puzzle puzzle) {
 
     std::ofstream solution("solution.txt");
     if (!solution.is_open())
-        error("Could not open solution.txt", 3);
-    while (path->empty()) {
+        error("Could not open solution.txt", 4);
+    while (!path->empty()) {
         solution << path->top() << std::endl
                  << std::endl;
         path->pop();
@@ -109,17 +118,6 @@ void solve(const std::shared_ptr<SearchBase> &search, Puzzle puzzle) {
 
 int main(int argc, char **argv) {
     Puzzle puzzle = getPuzzle(argc, argv);
-    std::unique_ptr<Heuristic> heuristic = getHeuristic();
-
-    switch (getAlgorithm()) {
-        case 1:
-            solve(std::make_shared<Search<AStarComparator>>(std::move(heuristic)), puzzle);
-            break;
-        case 2:
-            solve(std::make_shared<Search<GreedyComparator>>(std::move(heuristic)), puzzle);
-            break;
-        case 3:
-            solve(std::make_shared<Search<UniformCostComparator>>(std::move(heuristic)), puzzle);
-            break;
-    }
+    std::unique_ptr<SearchBase> search = getAlgorithm(getHeuristic());
+    solve(std::move(search), puzzle);
 }

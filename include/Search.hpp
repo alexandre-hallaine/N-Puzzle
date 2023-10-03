@@ -11,6 +11,7 @@ class SearchBase {
 public:
     virtual std::unique_ptr<std::stack<Puzzle>> solve(Puzzle puzzle) = 0;
     virtual void printStats() = 0;
+    virtual ~SearchBase() = default;
 };
 
 template<typename NodeComparator = AStarComparator>
