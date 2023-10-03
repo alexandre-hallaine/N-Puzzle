@@ -1,7 +1,7 @@
 #include "Heuristic.hpp"
 
 std::string MisplacedTiles::getName() const { return "Misplaced Tiles"; }
-unsigned int MisplacedTiles::calculate(Puzzle puzzle) {
+unsigned int MisplacedTiles::calculate(const Puzzle &puzzle) {
     std::vector<unsigned char> board = puzzle.getBoard();
 
     unsigned int misplacedTiles = 0;
@@ -13,7 +13,7 @@ unsigned int MisplacedTiles::calculate(Puzzle puzzle) {
 }
 
 std::string ManhattanDistance::getName() const { return "Manhattan Distance"; }
-unsigned int ManhattanDistance::calculate(Puzzle puzzle) {
+unsigned int ManhattanDistance::calculate(const Puzzle &puzzle) {
     std::vector<unsigned char> board = puzzle.getBoard();
 
     unsigned int manhattanDistance = 0;
@@ -32,7 +32,7 @@ unsigned int ManhattanDistance::calculate(Puzzle puzzle) {
 }
 
 std::string LinearConflict::getName() const { return "Linear Conflict"; }
-unsigned int LinearConflict::calculate(Puzzle puzzle) {
+unsigned int LinearConflict::calculate(const Puzzle &puzzle) {
     std::vector<unsigned char> board = puzzle.getBoard();
 
     unsigned int linearConflict = 0;

@@ -4,9 +4,9 @@
 #include <algorithm>
 
 template<typename NodeComparator>
-void Search<NodeComparator>::expandNode(const std::shared_ptr<Node> &node) {
-    for (const Puzzle& puzzle: node->getPuzzle().getChildren()) {
-        std::shared_ptr<Node> child = std::make_shared<Node>(puzzle, *heuristic, node.get());
+void Search<NodeComparator>::expandNode(const Node &node) {
+    for (const Puzzle& puzzle: node.getPuzzle().getChildren()) {
+        std::shared_ptr<Node> child = std::make_shared<Node>(puzzle, *heuristic, &node);
 
         if (std::find_if(closed.begin(), closed.end(), [&child](const std::shared_ptr<Node> &node) {
             return node->getPuzzle() == child->getPuzzle();
@@ -22,16 +22,17 @@ void Search<NodeComparator>::expandNode(const std::shared_ptr<Node> &node) {
             else
                 continue;
         }
+
         frontier.insert(child);
     }
 }
 
 template<typename NodeComparator>
-std::vector<Puzzle> Search<NodeComparator>::reconstructPath(const Node *node) {
+std::stack<Puzzle> Search<NodeComparator>::reconstructPath(const Node *node) {
     if (node == nullptr)
         return {};
-    std::vector<Puzzle> path = reconstructPath(node->getParent());
-    path.insert(path.begin(), node->getPuzzle());
+    std::stack<Puzzle> path = reconstructPath(node->getParent());
+    path.push(node->getPuzzle());
     return path;
 }
 
@@ -40,7 +41,7 @@ Search<NodeComparator>::Search(std::unique_ptr<Heuristic> heuristic) : heuristic
 }
 
 template<typename NodeComparator>
-std::unique_ptr<std::vector<Puzzle>> Search<NodeComparator>::solve(Puzzle puzzle) {
+std::unique_ptr<std::stack<Puzzle>> Search<NodeComparator>::solve(Puzzle puzzle) {
     frontier.clear();
     closed.clear();
 
@@ -51,8 +52,8 @@ std::unique_ptr<std::vector<Puzzle>> Search<NodeComparator>::solve(Puzzle puzzle
         closed.insert(node);
 
         if (node->getHeuristic() == 0)
-            return std::make_unique<std::vector<Puzzle>>(reconstructPath(node.get()));
-        expandNode(node);
+            return std::make_unique<std::stack<Puzzle>>(reconstructPath(node.get()));
+        expandNode(*node);
 
 //		 std::cout << "Cost: " << node->getCost() << " Heuristic: " << node->getHeuristic() << std::endl;
     }

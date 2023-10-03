@@ -12,7 +12,7 @@ private:
     unsigned int heuristic;
 
 public:
-    Node(const Puzzle &puzzle, Heuristic &heuristic, Node *parent = nullptr);
+    Node(const Puzzle &puzzle, Heuristic &heuristic, const Node *parent = nullptr);
 
     [[nodiscard]] const Puzzle &getPuzzle() const;
     [[nodiscard]] const Node *getParent() const;

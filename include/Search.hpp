@@ -5,10 +5,11 @@
 
 #include <set>
 #include <unordered_set>
+#include <stack>
 
 class SearchBase {
 public:
-    virtual std::unique_ptr<std::vector<Puzzle>> solve(Puzzle puzzle) = 0;
+    virtual std::unique_ptr<std::stack<Puzzle>> solve(Puzzle puzzle) = 0;
     virtual void printStats() = 0;
 };
 
@@ -20,12 +21,12 @@ private:
     std::multiset<std::shared_ptr<Node>, NodeComparator> frontier;
     std::unordered_multiset<std::shared_ptr<Node>> closed;
 
-    void expandNode(const std::shared_ptr<Node> &node);
-    std::vector<Puzzle> reconstructPath(const Node *node);
+    void expandNode(const Node &node);
+    std::stack<Puzzle> reconstructPath(const Node *node);
 
 public:
     explicit Search(std::unique_ptr<Heuristic> heuristic);
-    std::unique_ptr<std::vector<Puzzle>> solve(Puzzle puzzle) override;
+    std::unique_ptr<std::stack<Puzzle>> solve(Puzzle puzzle) override;
     void printStats() override;
 };
 

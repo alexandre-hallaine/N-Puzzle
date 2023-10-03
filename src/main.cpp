@@ -84,7 +84,7 @@ unsigned char getAlgorithm() {
 
 void solve(const std::shared_ptr<SearchBase> &search, Puzzle puzzle) {
     auto start = std::chrono::steady_clock::now();
-    std::unique_ptr<std::vector<Puzzle>> path = search->solve(std::move(puzzle));
+    std::unique_ptr<std::stack<Puzzle>> path = search->solve(std::move(puzzle));
     auto end = std::chrono::steady_clock::now();
 
     if (path == nullptr) {
@@ -100,9 +100,11 @@ void solve(const std::shared_ptr<SearchBase> &search, Puzzle puzzle) {
     std::ofstream solution("solution.txt");
     if (!solution.is_open())
         error("Could not open solution.txt", 3);
-    for (const Puzzle &puzzle_next: *path)
-        solution << puzzle_next << std::endl
+    while (path->empty()) {
+        solution << path->top() << std::endl
                  << std::endl;
+        path->pop();
+    }
 }
 
 int main(int argc, char **argv) {
