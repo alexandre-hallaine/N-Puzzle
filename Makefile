@@ -1,9 +1,11 @@
-NAME	:= n-puzzle
-CFLAGS	:= -Wall -Wextra
-# CFLAGS	+= -Werror
-CFLAGS	:= -Ofast
+NAME		:= n-puzzle
+CXXFLAGS	:= -Wall -Wextra
+# CXXFLAGS	+= -Werror
+CXXFLAGS	+= -Ofast
 
-HEADERS	:= -I ./include
+LIBS	:= 
+INCS	:= -I ./include
+
 SRC_DIR	:= ./src
 OBJ_DIR	:= ./obj
 SRCS	:= $(shell find $(SRC_DIR) -type f -name "*.cpp")
@@ -13,10 +15,10 @@ all: $(NAME)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	mkdir -p $(@D)
-	$(CXX) $(CFLAGS) -o $@ -c $< $(HEADERS) && echo "Compiled: $(notdir $@)"
+	$(CXX) $(CXXFLAGS) -o $@ -c $< $(INCS) && echo "Compiled: $(notdir $@)"
 
 $(NAME): $(OBJS)
-	$(CXX) $(OBJS) $(HEADERS) -o $(NAME) && echo "Linked: $(NAME)"
+	$(CXX) $(OBJS) -o $(NAME) $(LIBS) && echo "Linked: $(NAME)"
 
 clean:
 	rm -rf $(OBJ_DIR) && echo "Removed: $(OBJ_DIR)"

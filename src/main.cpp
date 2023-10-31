@@ -61,7 +61,7 @@ std::unique_ptr<Heuristic> getHeuristic() {
             std::make_unique<LinearConflict>()};
 
     std::cout << "Available heuristics:" << std::endl;
-    for (auto i = 0; i < heuristics.size(); i++)
+    for (std::array<std::unique_ptr<Heuristic>, 3>::size_type i = 0; i < heuristics.size(); i++)
         std::cout << i + 1 << ". " << heuristics[i]->getName() << std::endl;
     std::cout << std::endl;
 
