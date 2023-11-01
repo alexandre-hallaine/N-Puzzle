@@ -5,25 +5,24 @@
 
 template<typename NodeComparator>
 void Search<NodeComparator>::expandNode(const Node &node) {
-    for (const Puzzle &puzzle: node.getPuzzle().getChildren()) {
-        std::shared_ptr<Node> child = std::make_shared<Node>(puzzle, *heuristic, &node);
-
+    for (const Puzzle &child: node.getPuzzle().getChildren()) {
         if (std::find_if(closed.begin(), closed.end(), [&child](const std::shared_ptr<Node> &node) {
-            return node->getPuzzle() == child->getPuzzle();
+            return node->getPuzzle() == child;
         }) != closed.end())
             continue;
 
-        auto it = std::find_if(frontier.begin(), frontier.end(), [&child](const std::shared_ptr<Node> &node) {
-            return node->getPuzzle() == child->getPuzzle();
-        });
-        if (it != frontier.end()) {
-            if (child->getCost() < (*it)->getCost())
-                frontier.erase(it);
-            else
-                continue;
-        }
+        //removed cause the check above do it
+        // auto it = std::find_if(frontier.begin(), frontier.end(), [&child](const std::shared_ptr<Node> &node) {
+        //     return node->getPuzzle() == child;
+        // });
+        // if (it != frontier.end()) {
+        //     if (child_node->getCost() < (*it)->getCost())
+        //          frontier.erase(it);
+        //      else
+        //         continue;
+        // }
 
-        frontier.insert(child);
+        frontier.insert(std::make_shared<Node>(child, *heuristic, &node));
     }
 }
 
