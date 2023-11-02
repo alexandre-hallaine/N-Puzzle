@@ -1,12 +1,14 @@
 #include "Heuristic.hpp"
 
+#include <cmath>
+
 std::string MisplacedTiles::getName() const { return "Misplaced Tiles"; }
 unsigned int MisplacedTiles::calculate(const Puzzle &puzzle) {
     std::vector<unsigned char> board = puzzle.getBoard();
 
     unsigned int misplacedTiles = 0;
     for (std::vector<unsigned char>::size_type i = 0; i < board.size(); i++)
-        if (board[i] != i + 1)
+        if (board[i] != 0 && board[i] != i + 1)
             misplacedTiles++;
 
     return misplacedTiles;
@@ -25,7 +27,7 @@ unsigned int ManhattanDistance::calculate(const Puzzle &puzzle) {
             unsigned char y = i / size;
             unsigned char goalX = (value - 1) % size;
             unsigned char goalY = (value - 1) / size;
-            manhattanDistance += abs(x - goalX) + abs(y - goalY);
+            manhattanDistance += std::abs(x - goalX) + std::abs(y - goalY);
         }
     }
 
@@ -38,31 +40,32 @@ unsigned int LinearConflict::calculate(const Puzzle &puzzle) {
     unsigned char size = puzzle.getSize();
 
     unsigned int linearConflict = 0;
-    for (unsigned char i = 0; i < size; i++) {
-        unsigned char max_value = 0;
-        for (unsigned char j = 0; j < size; j++) {
-            unsigned char value = board[i * size + j];
-            if (value == 0)
-                continue;
+    for (unsigned char i = 0; i < size; ++i) // For each row and column
+    {
+        for (unsigned char j = 0; j < size - 1; ++j) // For each pair in the row/column
+        {
+            unsigned char value_row = board[i * size + j];
+            unsigned char value_col = board[j * size + i];
+            for (unsigned char k = j + 1; k < size; ++k) // Compare with subsequent tiles
+            {
+                unsigned char other_value_row = board[i * size + k];
+                unsigned char other_value_col = board[k * size + i];
 
-            if (value > max_value)
-                max_value = value;
-            else
-                linearConflict++;
-        }
+                // Check if value_row is in its goal row and there is a tile that should come after it
+                if (value_row != 0 && (value_row - 1) / size == i && other_value_row != 0 &&
+                    (other_value_row - 1) / size == i && value_row > other_value_row) {
+                    linearConflict++;
+                }
 
-        max_value = 0;
-        for (unsigned char j = 0; j < size; j++) {
-            unsigned char value = board[j * size + i];
-            if (value == 0)
-                continue;
-
-            if (value > max_value)
-                max_value = value;
-            else
-                linearConflict++;
+                // Check if value_col is in its goal column and there is a tile that should come after it
+                if (value_col != 0 && (value_col - 1) % size == i && other_value_col != 0 &&
+                    (other_value_col - 1) % size == i && value_col > other_value_col) {
+                    linearConflict++;
+                }
+            }
         }
     }
 
+    // Each conflict accounts for 2 additional moves
     return ManhattanDistance::calculate(puzzle) + 2 * linearConflict;
 }
