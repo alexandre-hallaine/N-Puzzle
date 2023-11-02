@@ -3,7 +3,7 @@
 #include "Heuristic.hpp"
 #include "Node.hpp"
 
-#include <set>
+#include <queue>
 #include <unordered_set>
 #include <stack>
 
@@ -18,16 +18,27 @@ public:
 template<typename NodeComparator = AStarComparator>
 class Search : public SearchBase {
 private:
-    std::unique_ptr<Heuristic> heuristic;
+    struct VectorHash {
+        size_t operator()(const std::vector<int> &v) const {
+            std::hash<int> hasher;
+            size_t seed = 0;
+            for (int i: v) {
+                // hash_combine technique
+                seed ^= hasher(i) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            }
+            return seed;
+        }
+    };
 
-    std::multiset<std::shared_ptr<Node>, NodeComparator> frontier;
-    std::unordered_multiset<std::shared_ptr<Node>> closed;
+    std::shared_ptr<Heuristic> heuristic;
 
-    void expandNode(const Node &node);
+    std::priority_queue<std::shared_ptr<Node>, std::vector<std::shared_ptr<Node>>, NodeComparator> frontier;
+    std::unordered_set<std::vector<int>, VectorHash> visited;
+
     std::stack<Puzzle> reconstructPath(const Node *node);
 
 public:
-    explicit Search(std::unique_ptr<Heuristic> heuristic);
+    explicit Search(const std::shared_ptr<Heuristic> &heuristic);
 
     std::unique_ptr<std::stack<Puzzle>> solve(Puzzle puzzle) override;
     void printStats() override;

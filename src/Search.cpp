@@ -4,29 +4,6 @@
 #include <algorithm>
 
 template<typename NodeComparator>
-void Search<NodeComparator>::expandNode(const Node &node) {
-    for (const Puzzle &child: node.getPuzzle().getChildren()) {
-        if (std::find_if(closed.begin(), closed.end(), [&child](const std::shared_ptr<Node> &node) {
-            return node->getPuzzle() == child;
-        }) != closed.end())
-            continue;
-
-        //removed cause the check above do it
-        // auto it = std::find_if(frontier.begin(), frontier.end(), [&child](const std::shared_ptr<Node> &node) {
-        //     return node->getPuzzle() == child;
-        // });
-        // if (it != frontier.end()) {
-        //     if (child_node->getCost() < (*it)->getCost())
-        //          frontier.erase(it);
-        //      else
-        //         continue;
-        // }
-
-        frontier.insert(std::make_shared<Node>(child, *heuristic, &node));
-    }
-}
-
-template<typename NodeComparator>
 std::stack<Puzzle> Search<NodeComparator>::reconstructPath(const Node *node) {
     if (node == nullptr)
         return {};
@@ -36,25 +13,28 @@ std::stack<Puzzle> Search<NodeComparator>::reconstructPath(const Node *node) {
 }
 
 template<typename NodeComparator>
-Search<NodeComparator>::Search(std::unique_ptr<Heuristic> heuristic) : heuristic(std::move(heuristic)) {
+Search<NodeComparator>::Search(const std::shared_ptr<Heuristic> &heuristic) : heuristic(heuristic) {
 }
 
 template<typename NodeComparator>
 std::unique_ptr<std::stack<Puzzle>> Search<NodeComparator>::solve(Puzzle puzzle) {
-    frontier.clear();
-    closed.clear();
+    while (!frontier.empty())
+        frontier.pop();
+    visited.clear();
 
-    frontier.insert(std::make_shared<Node>(puzzle, *heuristic));
+    frontier.push(std::make_shared<Node>(puzzle, *heuristic));
     while (!frontier.empty()) {
-        std::shared_ptr<Node> node = *frontier.begin();
-        frontier.erase(frontier.begin());
-        closed.insert(node);
+        std::shared_ptr<Node> node = frontier.top();
+        frontier.pop();
 
         if (node->getHeuristic() == 0)
             return std::make_unique<std::stack<Puzzle>>(reconstructPath(node.get()));
-        expandNode(*node);
 
-//		 std::cout << "Cost: " << node->getCost() << " Heuristic: " << node->getHeuristic() << std::endl;
+        const Puzzle &puzzle = node->getPuzzle();
+        visited.insert(puzzle.getBoard());
+        for (const Puzzle &child: puzzle.getChildren())
+            if (visited.find(child.getBoard()) == visited.end())
+                frontier.push(std::make_shared<Node>(child, *heuristic, node));
     }
 
     return nullptr;
@@ -63,5 +43,5 @@ std::unique_ptr<std::stack<Puzzle>> Search<NodeComparator>::solve(Puzzle puzzle)
 template<typename NodeComparator>
 void Search<NodeComparator>::printStats() {
     std::cout << "Complexity in time: " << frontier.size() << std::endl;
-    std::cout << "Complexity in size: " << closed.size() << std::endl;
+    std::cout << "Complexity in size: " << visited.size() << std::endl;
 }

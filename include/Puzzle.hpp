@@ -9,9 +9,9 @@
 class Puzzle {
 private:
 
-    unsigned char size;
-    std::vector<unsigned char> board;
-    std::pair<unsigned char, unsigned char> emptyTile;
+    int size;
+    std::vector<int> board;
+    std::pair<int, int> emptyTile;
 
     enum Direction {
         UP,
@@ -20,17 +20,17 @@ private:
         RIGHT
     };
 
-    explicit Puzzle(std::vector<unsigned char> board);
+    explicit Puzzle(std::vector<int> board);
 
     [[nodiscard]] std::unique_ptr<Puzzle> getSpecificChildren(Direction direction) const;
     [[nodiscard]] bool isSolvable() const;
 
 public:
-    explicit Puzzle(unsigned char size = 3);
+    explicit Puzzle(int size = 3);
     explicit Puzzle(const std::string &filename);
 
-    [[nodiscard]] unsigned char getSize() const;
-    [[nodiscard]] std::vector<unsigned char> getBoard() const;
+    [[nodiscard]] int getSize() const;
+    [[nodiscard]] std::vector<int> getBoard() const;
     [[nodiscard]] std::vector<Puzzle> getChildren() const;
 
     bool operator==(const Puzzle &other) const;

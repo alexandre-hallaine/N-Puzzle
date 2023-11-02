@@ -6,13 +6,13 @@
 class Node {
 private:
     Puzzle puzzle;
-    const Node *parent;
+    std::shared_ptr<Node> parent;
 
     unsigned int cost;
     unsigned int heuristic;
 
 public:
-    Node(const Puzzle &puzzle, Heuristic &heuristic, const Node *parent = nullptr);
+    Node(const Puzzle &puzzle, Heuristic &heuristic, const std::shared_ptr<Node> & = nullptr);
 
     [[nodiscard]] const Puzzle &getPuzzle() const;
     [[nodiscard]] const Node *getParent() const;

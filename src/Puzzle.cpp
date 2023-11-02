@@ -5,11 +5,11 @@
 #include <fstream>
 #include <cmath>
 
-Puzzle::Puzzle(std::vector<unsigned char> board) : size((unsigned char) std::sqrt(board.size())), board(board) {
+Puzzle::Puzzle(std::vector<int> board) : size(std::sqrt(board.size())), board(board) {
     if (!isSolvable())
         throw std::runtime_error("Board is not solvable");
 
-    for (std::vector<unsigned char>::size_type i = 0; i < board.size(); i++)
+    for (std::vector<int>::size_type i = 0; i < board.size(); i++)
         if (board[i] == 0) {
             emptyTile = std::make_pair(i / size, i % size);
             break;
@@ -47,8 +47,8 @@ std::unique_ptr<Puzzle> Puzzle::getSpecificChildren(Direction direction) const {
 
 bool Puzzle::isSolvable() const {
     size_t inversions = 0;
-    for (std::vector<unsigned char>::size_type i = 0; i < board.size(); i++)
-        for (std::vector<unsigned char>::size_type j = i + 1; j < board.size(); j++)
+    for (std::vector<int>::size_type i = 0; i < board.size(); i++)
+        for (std::vector<int>::size_type j = i + 1; j < board.size(); j++)
             if (board[i] != 0 && board[j] != 0 && board[i] > board[j])
                 inversions++;
 
@@ -57,8 +57,8 @@ bool Puzzle::isSolvable() const {
     return inversions % 2 == 0;
 }
 
-Puzzle::Puzzle(unsigned char size) : size(size) {
-    std::vector<unsigned char> board_new(size * size);
+Puzzle::Puzzle(int size) : size(size) {
+    std::vector<int> board_new(size * size);
     std::iota(board_new.begin(), board_new.end(), 1);
     board_new.back() = 0;
 
@@ -67,7 +67,7 @@ Puzzle::Puzzle(unsigned char size) : size(size) {
     std::random_device rd;
     std::mt19937 g(rd());
 
-    for (std::vector<unsigned char>::size_type _ = 0; _ < 100 * board.size(); _++) {
+    for (std::vector<int>::size_type _ = 0; _ < 100 * board.size(); _++) {
         std::vector<Puzzle> children = getChildren();
         std::uniform_int_distribution<std::vector<Puzzle>::size_type> d(0, children.size() - 1);
         *this = children[d(g)];
@@ -92,8 +92,10 @@ Puzzle::Puzzle(const std::string &filename) {
     *this = Puzzle(board);
 }
 
-unsigned char Puzzle::getSize() const { return size; }
-std::vector<unsigned char> Puzzle::getBoard() const { return board; }
+int Puzzle::getSize() const { return size; }
+
+std::vector<int> Puzzle::getBoard() const { return board; }
+
 std::vector<Puzzle> Puzzle::getChildren() const {
     std::vector<Puzzle> children;
     for (Direction direction: {UP, DOWN, LEFT, RIGHT}) {
@@ -105,14 +107,18 @@ std::vector<Puzzle> Puzzle::getChildren() const {
 }
 
 bool Puzzle::operator==(const Puzzle &other) const { return board == other.board; }
+
 std::ostream &operator<<(std::ostream &os, const Puzzle &puzzle) {
-    for (std::vector<unsigned char>::size_type i = 0; i < puzzle.board.size(); i++) {
+    for (std::vector<int>::size_type i = 0; i < puzzle.board.size(); i++) {
         if (i % puzzle.size != 0)
             os << "\t";
         else if (i != 0)
             os << std::endl;
 
-        os << (int) puzzle.board[i];
+        if (puzzle.board[i] == 0)
+            os << '_';
+        else
+            os << (int) puzzle.board[i];
     }
 
     return os;
