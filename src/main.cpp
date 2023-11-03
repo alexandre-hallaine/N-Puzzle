@@ -90,9 +90,9 @@ std::unique_ptr<SearchBase> getAlgorithm(const std::shared_ptr<Heuristic> &heuri
     return std::move(algorithms[choice - 1]);
 }
 
-void solve(std::unique_ptr<SearchBase> search, Puzzle puzzle) {
+void solve(std::unique_ptr<SearchBase> search, const Puzzle &puzzle) {
     auto start = std::chrono::steady_clock::now();
-    std::unique_ptr<std::stack<Puzzle>> path = search->solve(std::move(puzzle));
+    std::unique_ptr<std::stack<Puzzle>> path = search->solve(puzzle);
     auto end = std::chrono::steady_clock::now();
 
     if (path == nullptr) {
