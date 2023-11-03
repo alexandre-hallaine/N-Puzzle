@@ -67,7 +67,7 @@ std::shared_ptr<Heuristic> getHeuristic() {
 
     int i = 0;
     for (std::string heuristic: {"Misplaced tiles", "Manhattan distance", "Linear conflict"})
-        std::cout << (int) ++i << ". " << heuristic << std::endl;
+        std::cout << ++i << ". " << heuristic << std::endl;
     std::cout << std::endl;
 
     int choice = input("Choose a heuristic: ", heuristics.size());
@@ -83,7 +83,7 @@ std::unique_ptr<SearchBase> getAlgorithm(const std::shared_ptr<Heuristic> &heuri
 
     int i = 0;
     for (std::string algorithm: {"A*", "Greedy", "Uniform cost"})
-        std::cout << (int) ++i << ". " << algorithm << std::endl;
+        std::cout << ++i << ". " << algorithm << std::endl;
     std::cout << std::endl;
 
     int choice = input("Choose an algorithm: ", algorithms.size());

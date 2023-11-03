@@ -1,25 +1,29 @@
 #pragma once
 
-#include "Puzzle.hpp"
 #include "Heuristic.hpp"
+#include "Puzzle.hpp"
+
+#include <memory>
 
 class Node {
 private:
-    Puzzle puzzle;
-    std::shared_ptr<Node> parent;
+    const std::vector<int> board;
+    const std::shared_ptr<Node> parent;
+    const std::shared_ptr<Heuristic> heuristic;
 
-    unsigned int cost;
-    unsigned int heuristic;
+    int cost = 0;
 
 public:
-    Node(const Puzzle &puzzle, Heuristic &heuristic, const std::shared_ptr<Node> & = nullptr);
+    Node(const std::vector<int> &board, const std::shared_ptr<Heuristic> &heuristic,
+         const std::shared_ptr<Node> &parent = nullptr);
 
-    [[nodiscard]] const Puzzle &getPuzzle() const;
-    [[nodiscard]] const Node *getParent() const;
+    [[nodiscard]] const std::shared_ptr<Node> &getParent() const;
+    [[nodiscard]] const std::vector<int> &getBoard() const;
+    [[nodiscard]] std::vector<std::shared_ptr<Node>> getSuccessors() const;
 
-    [[nodiscard]] unsigned int getCost() const;
-    [[nodiscard]] unsigned int getHeuristic() const;
-    [[nodiscard]] unsigned int getScore() const;
+    [[nodiscard]] int getCost() const;
+    [[nodiscard]] int getHeuristic() const;
+    [[nodiscard]] int getScore() const;
 };
 
 struct NodeComparator {
@@ -27,13 +31,13 @@ struct NodeComparator {
 };
 
 struct AStarComparator : public NodeComparator {
-    bool operator()(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) const override;
+    [[nodiscard]]  bool operator()(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) const override;
 };
 
 struct GreedyComparator : public NodeComparator {
-    bool operator()(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) const override;
+    [[nodiscard]] bool operator()(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) const override;
 };
 
 struct UniformCostComparator : public NodeComparator {
-    bool operator()(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) const override;
+    [[nodiscard]] bool operator()(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) const override;
 };

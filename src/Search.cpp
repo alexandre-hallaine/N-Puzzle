@@ -1,14 +1,13 @@
 #include "Search.hpp"
 
 #include <iostream>
-#include <algorithm>
 
 template<typename NodeComparator>
-std::stack<Puzzle> Search<NodeComparator>::reconstructPath(const Node *node) {
+std::stack<Puzzle> Search<NodeComparator>::reconstructPath(const std::shared_ptr<Node> &node) {
     if (node == nullptr)
         return {};
     std::stack<Puzzle> path = reconstructPath(node->getParent());
-    path.push(node->getPuzzle());
+    path.push(Puzzle(node->getBoard()));
     return path;
 }
 
@@ -17,24 +16,23 @@ Search<NodeComparator>::Search(const std::shared_ptr<Heuristic> &heuristic) : he
 }
 
 template<typename NodeComparator>
-std::unique_ptr<std::stack<Puzzle>> Search<NodeComparator>::solve(Puzzle puzzle) {
+std::unique_ptr<std::stack<Puzzle>> Search<NodeComparator>::solve(const Puzzle &puzzle) {
     while (!frontier.empty())
         frontier.pop();
     visited.clear();
 
-    frontier.push(std::make_shared<Node>(puzzle, *heuristic));
+    frontier.push(std::make_shared<Node>(puzzle.getBoard(), heuristic));
     while (!frontier.empty()) {
         std::shared_ptr<Node> node = frontier.top();
         frontier.pop();
 
         if (node->getHeuristic() == 0)
-            return std::make_unique<std::stack<Puzzle>>(reconstructPath(node.get()));
+            return std::make_unique<std::stack<Puzzle>>(reconstructPath(node));
 
-        const Puzzle &puzzle = node->getPuzzle();
-        visited.insert(puzzle.getBoard());
-        for (const Puzzle &child: puzzle.getChildren())
-            if (visited.find(child.getBoard()) == visited.end())
-                frontier.push(std::make_shared<Node>(child, *heuristic, node));
+        visited.insert(node->getBoard());
+        for (const std::shared_ptr<Node> &child: node->getSuccessors())
+            if (visited.find(child->getBoard()) == visited.end())
+                frontier.push(child);
     }
 
     return nullptr;

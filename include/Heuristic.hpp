@@ -1,27 +1,25 @@
 #pragma once
 
-#include "Puzzle.hpp"
-
-#include <string>
+#include <vector>
 
 class Heuristic {
 public:
     virtual ~Heuristic() = default;
 
-    virtual unsigned int calculate(const Puzzle &puzzle) = 0;
+    virtual int calculate(const std::vector<int> &board) = 0;
 };
 
 class MisplacedTiles : public Heuristic {
 public:
-    unsigned int calculate(const Puzzle &puzzle) override;
+    [[nodiscard]] int calculate(const std::vector<int> &board) override;
 };
 
 class ManhattanDistance : public Heuristic {
 public:
-    unsigned int calculate(const Puzzle &puzzle) override;
+    [[nodiscard]] int calculate(const std::vector<int> &board) override;
 };
 
 class LinearConflict : public ManhattanDistance {
 public:
-    unsigned int calculate(const Puzzle &puzzle) override;
+    [[nodiscard]] int calculate(const std::vector<int> &board) override;
 };

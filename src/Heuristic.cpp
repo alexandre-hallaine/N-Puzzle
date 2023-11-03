@@ -2,23 +2,20 @@
 
 #include <cmath>
 
-unsigned int MisplacedTiles::calculate(const Puzzle &puzzle) {
-    std::vector<int> board = puzzle.getBoard();
-
-    unsigned int misplacedTiles = 0;
-    for (std::vector<int>::size_type i = 0; i < board.size(); i++)
-        if (board[i] != 0 && board[i] != (int) (i + 1))
+int MisplacedTiles::calculate(const std::vector<int> &board) {
+    int misplacedTiles = 0;
+    for (int i = 0; i < (int) board.size(); i++)
+        if (board[i] != 0 && board[i] != i + 1)
             misplacedTiles++;
 
     return misplacedTiles;
 }
 
-unsigned int ManhattanDistance::calculate(const Puzzle &puzzle) {
-    std::vector<int> board = puzzle.getBoard();
-    int size = puzzle.getSize();
+int ManhattanDistance::calculate(const std::vector<int> &board) {
+    int size = (int) std::sqrt(board.size());
 
-    unsigned int manhattanDistance = 0;
-    for (std::vector<int>::size_type i = 0; i < board.size(); i++) {
+    int manhattanDistance = 0;
+    for (int i = 0; i < (int) board.size(); i++) {
         int value = board[i];
         if (value != 0) {
             int x = i % size;
@@ -32,11 +29,10 @@ unsigned int ManhattanDistance::calculate(const Puzzle &puzzle) {
     return manhattanDistance;
 }
 
-unsigned int LinearConflict::calculate(const Puzzle &puzzle) {
-    std::vector<int> board = puzzle.getBoard();
-    int size = puzzle.getSize();
+int LinearConflict::calculate(const std::vector<int> &board) {
+    int size = (int) std::sqrt(board.size());
 
-    unsigned int linearConflict = 0;
+    int linearConflict = 0;
     for (int i = 0; i < size; ++i) // For each row and column
     {
         for (int j = 0; j < size - 1; ++j) // For each pair in the row/column
@@ -64,5 +60,5 @@ unsigned int LinearConflict::calculate(const Puzzle &puzzle) {
     }
 
     // Each conflict accounts for 2 additional moves
-    return ManhattanDistance::calculate(puzzle) + 2 * linearConflict;
+    return ManhattanDistance::calculate(board) + 2 * linearConflict;
 }
