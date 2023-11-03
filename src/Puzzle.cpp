@@ -6,7 +6,7 @@
 #include <random>
 #include <fstream>
 
-Puzzle::Puzzle(const std::vector<int> &board, int size) : board(board), size(size) {}
+Puzzle::Puzzle(const std::vector<int> &board) : board(board), size((int) std::sqrt(board.size())) {}
 
 bool Puzzle::isSolvable() const {
     int inversions = 0;
@@ -15,7 +15,6 @@ bool Puzzle::isSolvable() const {
             inversions += (int) std::count_if(it + 1, board.end(), [it](int x) { return x != 0 && *it > x; });
 
     auto zeroIndex = std::distance(board.begin(), std::find(board.begin(), board.end(), 0));
-    int size = (int) std::sqrt(board.size());
     std::pair<int, int> zero = {zeroIndex / size, zeroIndex % size};
 
     if (size % 2 == 0)
@@ -34,7 +33,7 @@ Puzzle::Puzzle(int size) : board(size * size), size(size) {
     } while (!isSolvable());
 }
 
-Puzzle::Puzzle(const std::string &filename) {
+Puzzle::Puzzle(const std::string &filename) : size(0) {
     std::ifstream file(filename);
     if (!file)
         throw std::runtime_error("Could not open file " + filename);
@@ -57,16 +56,13 @@ Puzzle::Puzzle(const std::string &filename) {
 
 std::vector<int> Puzzle::getBoard() const { return board; }
 
-int Puzzle::getSize() const { return size; }
-
 std::ostream &operator<<(std::ostream &os, const Puzzle &puzzle) {
-    int size = (int) std::sqrt(puzzle.board.size());
-    for (int i = 0; i < size; ++i) {
-        for (int j = 0; j < size; ++j) {
+    for (int i = 0; i < puzzle.size; ++i) {
+        for (int j = 0; j < puzzle.size; ++j) {
             if (j > 0) os << "\t";
             else if (i > 0) os << std::endl;
-            if (puzzle.board[i * size + j] == 0) os << '_';
-            else os << puzzle.board[i * size + j];
+            if (puzzle.board[i * puzzle.size + j] == 0) os << '_';
+            else os << puzzle.board[i * puzzle.size + j];
         }
     }
     return os;

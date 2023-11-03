@@ -16,7 +16,7 @@ Node::Node(const std::vector<int> &board, int size, const std::shared_ptr<Heuris
 }
 
 Node::Node(const Puzzle &puzzle, const std::shared_ptr<Heuristic> &heuristic) : Node(puzzle.getBoard(),
-                                                                                     puzzle.getSize(), heuristic,
+                                                                                     puzzle.size, heuristic,
                                                                                      nullptr) {}
 
 const std::shared_ptr<Node> &Node::getParent() const { return parent; }
@@ -71,4 +71,4 @@ bool UniformCostComparator::operator()(const std::shared_ptr<Node> &lhs, const s
     return lhs->getCost() > rhs->getCost();
 }
 
-Puzzle Node::getPuzzle() const { return Puzzle(board, size); }
+Puzzle Node::getPuzzle() const { return Puzzle(board); }

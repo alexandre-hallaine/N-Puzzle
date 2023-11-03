@@ -12,14 +12,13 @@ private:
 
     [[nodiscard]] bool isSolvable() const;
 
-    explicit Puzzle(const std::vector<int> &board, int size);
+    explicit Puzzle(const std::vector<int> &board);
 
 public:
     explicit Puzzle(int size = 3);
     explicit Puzzle(const std::string &filename);
 
     [[nodiscard]] std::vector<int> getBoard() const;
-    [[nodiscard]] int getSize() const;
 
     friend std::ostream &operator<<(std::ostream &os, const Puzzle &puzzle);
 
