@@ -3,20 +3,27 @@
 #include <algorithm>
 #include <cmath>
 
-Node::Node(const std::vector<int> &board, const std::shared_ptr<Heuristic> &heuristic,
+Node::Node(const std::vector<int> &board, int size, const std::shared_ptr<Heuristic> &heuristic,
            const std::shared_ptr<Node> &parent) : board(board),
                                                   parent(parent),
-                                                  heuristic(heuristic) {
+                                                  heuristic(heuristic),
+                                                  size(size) {
     if (parent)
-        cost = parent->getCost() + 1;
+        cost_value = parent->getCost() + 1;
+    if (heuristic == nullptr)
+        throw std::invalid_argument("Heuristic cannot be null");
+    heuristic_value = heuristic->calculate(board, size);
 }
+
+Node::Node(const Puzzle &puzzle, const std::shared_ptr<Heuristic> &heuristic) : Node(puzzle.getBoard(),
+                                                                                     puzzle.getSize(), heuristic,
+                                                                                     nullptr) {}
 
 const std::shared_ptr<Node> &Node::getParent() const { return parent; }
 
 const std::vector<int> &Node::getBoard() const { return board; }
 
 std::vector<std::shared_ptr<Node>> Node::getSuccessors() const {
-    int size = (int) std::sqrt(board.size());
     std::pair<int, int> zero;
     {
         auto zeroIndex = std::distance(board.begin(), std::find(board.begin(), board.end(), 0));
@@ -37,7 +44,8 @@ std::vector<std::shared_ptr<Node>> Node::getSuccessors() const {
         std::vector<int> newBoard = board;
         std::swap(newBoard[zero.second * size + zero.first], newBoard[move.second * size + move.first]);
 
-        successors.emplace_back(std::make_shared<Node>(newBoard, heuristic, std::make_shared<Node>(*this)));
+        Node successor(newBoard, size, heuristic, std::make_shared<Node>(*this));
+        successors.emplace_back(std::make_shared<Node>(successor));
     }
 
     return successors;
@@ -45,11 +53,11 @@ std::vector<std::shared_ptr<Node>> Node::getSuccessors() const {
 
 }
 
-int Node::getCost() const { return cost; }
+int Node::getCost() const { return cost_value; }
 
-int Node::getHeuristic() const { return heuristic ? heuristic->calculate(board) : 0; }
+int Node::getHeuristic() const { return heuristic_value; }
 
-int Node::getScore() const { return getCost() + getHeuristic(); }
+int Node::getScore() const { return cost_value + heuristic_value; }
 
 bool AStarComparator::operator()(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) const {
     return lhs->getScore() > rhs->getScore();
@@ -62,3 +70,5 @@ bool GreedyComparator::operator()(const std::shared_ptr<Node> &lhs, const std::s
 bool UniformCostComparator::operator()(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) const {
     return lhs->getCost() > rhs->getCost();
 }
+
+Puzzle Node::getPuzzle() const { return Puzzle(board, size); }

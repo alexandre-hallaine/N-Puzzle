@@ -7,7 +7,7 @@ std::stack<Puzzle> Search<NodeComparator>::reconstructPath(const std::shared_ptr
     if (node == nullptr)
         return {};
     std::stack<Puzzle> path = reconstructPath(node->getParent());
-    path.push(Puzzle(node->getBoard()));
+    path.push(node->getPuzzle());
     return path;
 }
 
@@ -21,7 +21,11 @@ std::unique_ptr<std::stack<Puzzle>> Search<NodeComparator>::solve(const Puzzle &
         frontier.pop();
     visited.clear();
 
-    frontier.push(std::make_shared<Node>(puzzle.getBoard(), heuristic));
+    {
+        Node node(puzzle, heuristic);
+        frontier.push(std::make_shared<Node>(node));
+    }
+
     while (!frontier.empty()) {
         std::shared_ptr<Node> node = frontier.top();
         frontier.pop();

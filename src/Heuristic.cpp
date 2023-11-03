@@ -2,7 +2,9 @@
 
 #include <cmath>
 
-int MisplacedTiles::calculate(const std::vector<int> &board) {
+int MisplacedTiles::calculate(const std::vector<int> &board, int size) {
+    (void) size;
+
     int misplacedTiles = 0;
     for (int i = 0; i < (int) board.size(); i++)
         if (board[i] != 0 && board[i] != i + 1)
@@ -11,9 +13,7 @@ int MisplacedTiles::calculate(const std::vector<int> &board) {
     return misplacedTiles;
 }
 
-int ManhattanDistance::calculate(const std::vector<int> &board) {
-    int size = (int) std::sqrt(board.size());
-
+int ManhattanDistance::calculate(const std::vector<int> &board, int size) {
     int manhattanDistance = 0;
     for (int i = 0; i < (int) board.size(); i++) {
         int value = board[i];
@@ -29,9 +29,7 @@ int ManhattanDistance::calculate(const std::vector<int> &board) {
     return manhattanDistance;
 }
 
-int LinearConflict::calculate(const std::vector<int> &board) {
-    int size = (int) std::sqrt(board.size());
-
+int LinearConflict::calculate(const std::vector<int> &board, int size) {
     int linearConflict = 0;
     for (int i = 0; i < size; ++i) // For each row and column
     {
@@ -60,5 +58,5 @@ int LinearConflict::calculate(const std::vector<int> &board) {
     }
 
     // Each conflict accounts for 2 additional moves
-    return ManhattanDistance::calculate(board) + 2 * linearConflict;
+    return ManhattanDistance::calculate(board, size) + 2 * linearConflict;
 }

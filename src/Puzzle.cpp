@@ -6,7 +6,7 @@
 #include <random>
 #include <fstream>
 
-Puzzle::Puzzle(const std::vector<int> &board) : board(board) {}
+Puzzle::Puzzle(const std::vector<int> &board, int size) : board(board), size(size) {}
 
 bool Puzzle::isSolvable() const {
     int inversions = 0;
@@ -23,7 +23,7 @@ bool Puzzle::isSolvable() const {
     return inversions % 2 == 0;
 }
 
-Puzzle::Puzzle(int size) : board(size * size) {
+Puzzle::Puzzle(int size) : board(size * size), size(size) {
     std::iota(board.begin(), board.end(), 1);
     board.back() = 0;
 
@@ -40,7 +40,6 @@ Puzzle::Puzzle(const std::string &filename) {
         throw std::runtime_error("Could not open file " + filename);
     file.exceptions(std::ifstream::badbit);
 
-    int size;
     file >> size;
     if (!file)
         throw std::runtime_error("Invalid file format: could not read size");
@@ -57,6 +56,8 @@ Puzzle::Puzzle(const std::string &filename) {
 }
 
 std::vector<int> Puzzle::getBoard() const { return board; }
+
+int Puzzle::getSize() const { return size; }
 
 std::ostream &operator<<(std::ostream &os, const Puzzle &puzzle) {
     int size = (int) std::sqrt(puzzle.board.size());
