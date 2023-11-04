@@ -3,23 +3,22 @@
 #include <vector>
 #include <ostream>
 
-class Puzzle {
-    friend class Node;
+namespace NPuzzle {
+    class Puzzle {
+        friend class Node;
 
-private:
-    std::vector<int> board;
-    int size;
+    private:
+        std::vector<int> board;
+        int size = 0;
 
-    [[nodiscard]] bool isSolvable() const;
+        explicit Puzzle(const std::vector<int> &board);
 
-    explicit Puzzle(const std::vector<int> &board);
+        [[nodiscard]] bool isSolvable() const;
 
-public:
-    explicit Puzzle(int size = 3);
-    explicit Puzzle(const std::string &filename);
+    public:
+        explicit Puzzle(int size = 3);
+        explicit Puzzle(const std::string &filename);
 
-    [[nodiscard]] std::vector<int> getBoard() const;
-
-    friend std::ostream &operator<<(std::ostream &os, const Puzzle &puzzle);
-
-};
+        friend std::ostream &operator<<(std::ostream &os, const Puzzle &puzzle);
+    };
+}

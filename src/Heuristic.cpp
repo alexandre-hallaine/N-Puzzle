@@ -2,61 +2,52 @@
 
 #include <cmath>
 
-int MisplacedTiles::calculate(const std::vector<int> &board, int size) {
-    (void) size;
-
-    int misplacedTiles = 0;
-    for (int i = 0; i < (int) board.size(); i++)
-        if (board[i] != 0 && board[i] != i + 1)
-            misplacedTiles++;
-
-    return misplacedTiles;
-}
-
-int ManhattanDistance::calculate(const std::vector<int> &board, int size) {
-    int manhattanDistance = 0;
-    for (int i = 0; i < (int) board.size(); i++) {
-        int value = board[i];
-        if (value != 0) {
-            int x = i % size;
-            int y = i / size;
-            int goalX = (value - 1) % size;
-            int goalY = (value - 1) / size;
-            manhattanDistance += std::abs(x - goalX) + std::abs(y - goalY);
-        }
+namespace NPuzzle {
+    int Heuristic_MisplacedTiles::calculate(const std::vector<int> &board, int /* size */) {
+        int misplacedTiles = 0;
+        for (size_t i = 0, len = board.size(); i < len; ++i)
+            misplacedTiles += board[i] != 0 && board[i] != static_cast<int>(i) + 1;
+        return misplacedTiles;
     }
 
-    return manhattanDistance;
-}
+    int Heuristic_ManhattanDistance::calculate(const std::vector<int> &board, int size) {
+        int manhattanDistance = 0;
+        for (size_t i = 0, len = board.size(); i < len; ++i)
+            if (board[i] != 0) {
+                int tile = board[i] - 1;
+                manhattanDistance += std::abs(static_cast<int>(tile % size) - static_cast<int>(i % size)) +
+                                     std::abs(static_cast<int>(tile / size) - static_cast<int>(i / size));
+            }
+        return manhattanDistance;
+    }
 
-int LinearConflict::calculate(const std::vector<int> &board, int size) {
-    int linearConflict = 0;
-    for (int i = 0; i < size; ++i) // For each row and column
-    {
-        for (int j = 0; j < size - 1; ++j) // For each pair in the row/column
-        {
-            int value_row = board[i * size + j];
-            int value_col = board[j * size + i];
-            for (int k = j + 1; k < size; ++k) // Compare with subsequent tiles
-            {
-                int other_value_row = board[i * size + k];
-                int other_value_col = board[k * size + i];
+    int Heuristic_LinearConflict::calculate(const std::vector<int> &board, int size) {
+        int linearConflict = 0;
+        int manhattanDistance = Heuristic_ManhattanDistance::calculate(board, size);
 
-                // Check if value_row is in its goal row and there is a tile that should come after it
-                if (value_row != 0 && (value_row - 1) / size == i && other_value_row != 0 &&
-                    (other_value_row - 1) / size == i && value_row > other_value_row) {
-                    linearConflict++;
-                }
+        for (int row = 0; row < size; ++row)
+            for (int col = 0; col < size; ++col) {
+                int index = row * size + col;
+                int tile = board[index];
+                if (tile != 0) {
+                    int goalRow = (tile - 1) / size;
+                    int goalCol = (tile - 1) % size;
 
-                // Check if value_col is in its goal column and there is a tile that should come after it
-                if (value_col != 0 && (value_col - 1) % size == i && other_value_col != 0 &&
-                    (other_value_col - 1) % size == i && value_col > other_value_col) {
-                    linearConflict++;
+                    if (goalRow == row)
+                        for (int k = col + 1; k < size; ++k) {
+                            int otherTile = board[row * size + k];
+                            if (otherTile != 0 && (otherTile - 1) / size == row && tile > otherTile)
+                                linearConflict++;
+                        }
+                    if (goalCol == col)
+                        for (int k = row + 1; k < size; ++k) {
+                            int otherTile = board[k * size + col];
+                            if (otherTile != 0 && (otherTile - 1) % size == col && tile > otherTile)
+                                linearConflict++;
+                        }
                 }
             }
-        }
-    }
 
-    // Each conflict accounts for 2 additional moves
-    return ManhattanDistance::calculate(board, size) + 2 * linearConflict;
+        return manhattanDistance + 2 * linearConflict;
+    }
 }

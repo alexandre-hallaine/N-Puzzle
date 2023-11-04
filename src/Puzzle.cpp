@@ -1,69 +1,79 @@
 #include "Puzzle.hpp"
 
-#include <numeric>
 #include <algorithm>
-#include <cmath>
 #include <random>
 #include <fstream>
+#include <iterator>
 
-Puzzle::Puzzle(const std::vector<int> &board) : board(board), size((int) std::sqrt(board.size())) {}
-
-bool Puzzle::isSolvable() const {
-    int inversions = 0;
-    for (auto it = board.begin(); it != board.end(); it++)
-        if (*it != 0)
-            inversions += (int) std::count_if(it + 1, board.end(), [it](int x) { return x != 0 && *it > x; });
-
-    auto zeroIndex = std::distance(board.begin(), std::find(board.begin(), board.end(), 0));
-    std::pair<int, int> zero = {zeroIndex / size, zeroIndex % size};
-
-    if (size % 2 == 0)
-        inversions += zero.first + 1;
-    return inversions % 2 == 0;
-}
-
-Puzzle::Puzzle(int size) : board(size * size), size(size) {
-    std::iota(board.begin(), board.end(), 1);
-    board.back() = 0;
-
-    std::random_device rd;
-    std::mt19937 g(rd());
-    do {
-        std::shuffle(board.begin(), board.end(), g);
-    } while (!isSolvable());
-}
-
-Puzzle::Puzzle(const std::string &filename) : size(0) {
-    std::ifstream file(filename);
-    if (!file)
-        throw std::runtime_error("Could not open file " + filename);
-    file.exceptions(std::ifstream::badbit);
-
-    file >> size;
-    if (!file)
-        throw std::runtime_error("Invalid file format: could not read size");
-
-    int number;
-    while (file >> number) {
-        board.push_back(number);
+namespace NPuzzle {
+    int countInversions(const std::vector<int> &board) {
+        int inversions = 0;
+        for (size_t i = 0; i < board.size(); ++i)
+            for (size_t j = i + 1; j < board.size(); ++j)
+                if (board[i] > board[j] && board[i] != 0 && board[j] != 0)
+                    ++inversions;
+        return inversions;
     }
 
-    if ((int) board.size() != size * size)
-        throw std::runtime_error("Board size does not match size");
-    if (!isSolvable())
-        throw std::runtime_error("Board is not solvable");
-}
+    Puzzle::Puzzle(const std::vector<int> &initialBoard)
+            : board(initialBoard), size(static_cast<int>(std::sqrt(board.size()))) {
+        if (size * size != static_cast<int>(board.size()))
+            throw std::invalid_argument("Board size must be a perfect square.");
+    }
 
-std::vector<int> Puzzle::getBoard() const { return board; }
-
-std::ostream &operator<<(std::ostream &os, const Puzzle &puzzle) {
-    for (int i = 0; i < puzzle.size; ++i) {
-        for (int j = 0; j < puzzle.size; ++j) {
-            if (j > 0) os << "\t";
-            else if (i > 0) os << std::endl;
-            if (puzzle.board[i * puzzle.size + j] == 0) os << '_';
-            else os << puzzle.board[i * puzzle.size + j];
+    bool Puzzle::isSolvable() const {
+        int inversions = countInversions(board);
+        if (size % 2 != 0)
+            return inversions % 2 == 0;
+        else {
+            size_t zeroRow = (std::find(board.begin(), board.end(), 0) - board.begin()) / size;
+            return (zeroRow % 2 == 0) == (inversions % 2 != 0);
         }
     }
-    return os;
+
+    Puzzle::Puzzle(int dimension) : size(dimension) {
+        if (dimension <= 0)
+            throw std::invalid_argument("Dimension must be positive.");
+
+        board.resize(size * size);
+        std::iota(board.begin(), board.end(), 1);
+        board.back() = 0;
+
+        static std::mt19937 g(std::random_device{}());
+        do {
+            std::shuffle(board.begin(), board.end(), g);
+        } while (!isSolvable());
+    }
+
+    Puzzle::Puzzle(const std::string &filename) {
+        std::ifstream file(filename);
+        if (!file)
+            throw std::runtime_error("Could not open file: " + filename);
+
+        file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+        file >> size;
+
+        if (size <= 0)
+            throw std::runtime_error("Board size must be positive.");
+
+        board.reserve(size * size);
+        std::copy_n(std::istream_iterator<int>(file), size * size, std::back_inserter(board));
+
+        if (board.size() != static_cast<size_t>(size) * static_cast<size_t>(size))
+            throw std::runtime_error("Board size does not match the expected size.");
+
+        if (!isSolvable())
+            throw std::runtime_error("Board is not solvable.");
+    }
+
+    std::ostream &operator<<(std::ostream &os, const Puzzle &puzzle) {
+        for (int i = 0; i < puzzle.size; ++i)
+            for (int j = 0; j < puzzle.size; ++j) {
+                if (j > 0) os << '\t';
+                else if (i > 0) os << '\n';
+                if (puzzle.board[i * puzzle.size + j] == 0) os << '_';
+                else os << puzzle.board[i * puzzle.size + j];
+            }
+        return os;
+    }
 }

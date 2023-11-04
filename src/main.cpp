@@ -3,119 +3,103 @@
 #include <iostream>
 #include <chrono>
 #include <fstream>
-#include <utility>
+#include <functional>
 
-void error(const std::string &message, int code = 1) {
-    std::cerr << message << std::endl;
-    exit(code);
+using namespace NPuzzle;
+
+Puzzle createPuzzle(int argc, char **argv) {
+    if (argc == 2) {
+        std::string arg1(argv[1]);
+        if (arg1.find(".txt") != std::string::npos)
+            return Puzzle(arg1);
+        else if (arg1.find_first_not_of("0123456789") == std::string::npos)
+            return Puzzle(std::stoi(arg1));
+        else
+            throw std::invalid_argument("Invalid argument. Provide a .txt file or a numeric puzzle size.");
+    } else
+        return Puzzle();
 }
 
-int input(const std::string &message, int length) {
-    std::string input;
-    int choice;
+template<typename T>
+T getUserChoice(const std::string &message, const std::vector<std::string> &choices) {
+    for (size_t i = 0; i < choices.size(); ++i)
+        std::cout << (i + 1) << ". " << choices[i] << std::endl;
 
+    size_t choice = -1;
     do {
         std::cout << message;
-        std::getline(std::cin, input);
-
-        try {
-            choice = std::stoi(input);
-            if (choice < 1 || choice > length)
-                std::cout << "That's not a valid choice" << std::endl;
-            else
-                break;
-        }
-        catch (std::exception &e) {
-            std::cout << "That's not a number" << std::endl;
-        }
+        if (!(std::cin >> choice) || choice < 1 || choice > choices.size()) {
+            std::cout << "Invalid choice. Please enter a number between 1 and " << choices.size() << "." << std::endl;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        } else
+            break;
     } while (true);
-    std::cout << std::endl;
-    return choice;
+
+    return T(choice - 1);
 }
 
-Puzzle getPuzzle(int argc, char **argv) {
-    if (argc > 2)
-        error("Usage: " + std::string(argv[0]) + " [filename/size]", 2);
-
-    std::unique_ptr<Puzzle> puzzle;
-    try {
-        if (argc != 2)
-            puzzle = std::make_unique<Puzzle>();
-        else if (std::string(argv[1]).find(".txt") != std::string::npos)
-            puzzle = std::make_unique<Puzzle>(std::string(argv[1]));
-        else if (std::string(argv[1]).find_first_not_of("0123456789") == std::string::npos)
-            puzzle = std::make_unique<Puzzle>(std::stoi(argv[1]));
-        else
-            error("Invalid argument", 2);
-    }
-    catch (std::exception &e) {
-        error(e.what(), 2);
-    }
-
-    std::cout << "Initial puzzle:" << std::endl
-              << *puzzle << std::endl
-              << std::endl;
-    return *puzzle;
+std::shared_ptr<Heuristic> createHeuristic(int index) {
+    static const std::array<std::shared_ptr<Heuristic>, 3> heuristics = {
+            std::make_shared<Heuristic_MisplacedTiles>(),
+            std::make_shared<Heuristic_ManhattanDistance>(),
+            std::make_shared<Heuristic_LinearConflict>()
+    };
+    return heuristics[index];
 }
 
-std::shared_ptr<Heuristic> getHeuristic() {
-    std::cout << "Available heuristics:" << std::endl;
-    std::array<std::shared_ptr<Heuristic>, 3> heuristics = {
-            std::make_shared<MisplacedTiles>(),
-            std::make_shared<ManhattanDistance>(),
-            std::make_shared<LinearConflict>()};
-
-    int i = 0;
-    for (std::string heuristic: {"Misplaced tiles", "Manhattan distance", "Linear conflict"})
-        std::cout << ++i << ". " << heuristic << std::endl;
-    std::cout << std::endl;
-
-    int choice = input("Choose a heuristic: ", heuristics.size());
-    return std::move(heuristics[choice - 1]);
+std::unique_ptr<SearchBase> createAlgorithm(int index) {
+    static const std::array<std::function<std::unique_ptr<SearchBase>()>, 3> algorithms = {
+            []() { return std::make_unique<Search<NodeComparator_AStar>>(); },
+            []() { return std::make_unique<Search<NodeComparator_Greedy>>(); },
+            []() { return std::make_unique<Search<NodeComparator_UniformCost>>(); }
+    };
+    return algorithms[index]();
 }
 
-std::unique_ptr<SearchBase> getAlgorithm(const std::shared_ptr<Heuristic> &heuristic) {
-    std::cout << "Available algorithms:" << std::endl;
-    std::array<std::unique_ptr<SearchBase>, 3> algorithms = {
-            std::make_unique<Search<AStarComparator>>(heuristic),
-            std::make_unique<Search<GreedyComparator>>(heuristic),
-            std::make_unique<Search<UniformCostComparator>>(heuristic)};
+void solve(Puzzle &puzzle) {
+    std::cout << "Initial puzzle state:\n" << puzzle << std::endl;
 
-    int i = 0;
-    for (std::string algorithm: {"A*", "Greedy", "Uniform cost"})
-        std::cout << ++i << ". " << algorithm << std::endl;
-    std::cout << std::endl;
+    auto heuristic = createHeuristic(getUserChoice<int>(
+            "Choose a heuristic: ",
+            {"Misplaced tiles", "Manhattan distance", "Linear conflict"}
+    ));
 
-    int choice = input("Choose an algorithm: ", algorithms.size());
-    return std::move(algorithms[choice - 1]);
-}
+    auto algorithm = createAlgorithm(getUserChoice<int>(
+            "Choose an algorithm: ",
+            {"A*", "Greedy", "Uniform cost"}
+    ));
 
-void solve(std::unique_ptr<SearchBase> search, const Puzzle &puzzle) {
     auto start = std::chrono::steady_clock::now();
-    std::unique_ptr<std::stack<Puzzle>> path = search->solve(puzzle);
+    auto path = algorithm->solve(puzzle, heuristic);
     auto end = std::chrono::steady_clock::now();
 
-    if (path == nullptr) {
-        std::cout << "No solution found" << std::endl;
+    if (!path) {
+        std::cout << "No solution found." << std::endl;
         return;
     }
 
     std::chrono::duration<double> elapsed_seconds = end - start;
-    std::cout << "Elapsed time: " << elapsed_seconds.count() << "s" << std::endl;
-    std::cout << "Solution found in " << path->size() - 1 << " moves" << std::endl;
-    search->printStats();
+    std::cout << "Solution found in " << elapsed_seconds.count() << " seconds, "
+              << "with " << path->size() - 1 << " moves." << std::endl;
+    algorithm->printStats();
 
-    std::ofstream solution("solution.txt");
-    if (!solution.is_open())
-        error("Could not open solution.txt", 4);
+    std::ofstream solutionFile("solution.txt");
+    if (!solutionFile.is_open())
+        throw std::runtime_error("Failed to open file to write solution.");
     while (!path->empty()) {
-        solution << path->top() << std::endl
-                 << std::endl;
+        solutionFile << path->top() << "\n\n";
         path->pop();
     }
 }
 
 int main(int argc, char **argv) {
-    Puzzle puzzle = getPuzzle(argc, argv);
-    solve(getAlgorithm(getHeuristic()), puzzle);
+    try {
+        Puzzle puzzle = createPuzzle(argc, argv);
+        solve(puzzle);
+    } catch (const std::exception &e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
 }
