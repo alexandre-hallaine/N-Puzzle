@@ -1,6 +1,7 @@
 #include "Node.hpp"
 
 #include <algorithm>
+#include <array>
 
 namespace NPuzzle {
     Node::Node(const Puzzle &puzzle, const std::shared_ptr<Heuristic> &heuristic)
